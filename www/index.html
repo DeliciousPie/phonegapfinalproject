@@ -21,7 +21,9 @@
         function PhonegapLoaded()
         {
             // ok to make phonegap api calls here as it has now been loaded.
-
+			//Load up stored tasks from the database
+			var db = window.openDatabase("Database")
+			
         }
 
         /**
@@ -47,8 +49,9 @@
                 {
                     //Add the new task to the previous ones
                     //New task can't be completed so it's not checked by default
-                    taskArray = { check : false, text : newTaskText };
-                    addNewTask(taskArray, false);
+					taskArray["checked"] = false;
+					taskArray["text"] = newTaskText;
+                    addNewTask(taskArray, false);;
                 }
             }
         }
@@ -56,8 +59,23 @@
         /**
          * Purpose: Adds a new task to the list of current tasks. Creates a new element from the passed in task, which
          * is an associative array
+		 * Parameters:
+		 *		newTaskArray: An array that holds the task to add (task text and whether it is completed)
+		 *		appIsLoading: Boolen value to check if the app is being loaded. If it is NOT being loaded, we will let the user know
+		 *						that the task has been successfully added. If it is being loaded, no alert is needed.
          */
-
+		function addNewTask(taskToAdd, appIsLoading)
+		{
+			alert("You want to add the task: " + taskToAdd["text"]);
+			if(taskToAdd["checked"])
+			{
+				alert("This task is done!");
+			}
+			else
+			{
+				alert("Task needs to be completed");
+			
+		}
 
     </script>
 </head>
@@ -69,8 +87,9 @@
     </div><!— /header —>
     <!-- Main buttons -->
     <input type="button" value="Add Task" class="ui-btn ui-btn-block" onclick="newTask();"/>
+	<!-- Maybe auto-remove complete tasks but have a new page to view completed tasks -->
     <input type="button" value="Remove Completed Tasks" class="ui-btn ui-btn-block" />
-
+	<hr>
     <div data-role="content">
         <div id="contentdiv">
 
