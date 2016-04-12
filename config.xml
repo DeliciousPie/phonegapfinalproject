@@ -1,0 +1,38 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<widget xmlns = "http://www.w3.org/ns/widgets"
+        xmlns:gap = "http://phonegap.com/ns/1.0"
+        id = "com.phonegap.cst233"
+        version = "1.0.0">
+  <name>CST233</name>
+  <description>
+    COSC 295 Final Project
+  </description>
+  <author href = "http://programs.siast.sk.ca/cst" email = "reid3042@saskpolytech.ca">
+    Wes Reid
+  </author>
+  <feature name = "http://api.phonegap.com/1.0/device"/>
+  <preference name = "phonegap-version" value = "cli-5.2.0"/>
+  <preference name = "orientation" value = "default"/>
+  <preference name = "target-device" value = "universal"/>
+  <preference name = "fullscreen" value = "false"/>
+  <gap:plugin name="org.apache.cordova.battery-status" source="pgb" />
+  <gap:plugin name="org.apache.cordova.camera" source="pgb" />
+  <gap:plugin name="org.apache.cordova.media-capture" source="pgb" />
+  <gap:plugin name="org.apache.cordova.console" source="pgb" />
+  <gap:plugin name="org.apache.cordova.contacts" source="pgb"/>
+  <gap:plugin name="org.apache.cordova.device" source="pgb"/>
+  <gap:plugin name="org.apache.cordova.device-motion" source="pgb"/>
+  <gap:plugin name="org.apache.cordova.device-orientation" source="pgb"/>
+  <gap:plugin name="org.apache.cordova.dialogs" source="pgb"/>
+  <gap:plugin name="org.apache.cordova.file" source="pgb" />
+  <gap:plugin name="org.apache.cordova.file-transfer" source="pgb"/>
+  <gap:plugin name="org.apache.cordova.geolocation" source="pgb"/>
+  <gap:plugin name="org.apache.cordova.globalization" source="pgb"/>
+  <gap:plugin name="org.apache.cordova.inappbrowser" source="pgb"/>
+  <gap:plugin name="org.apache.cordova.media" source="pgb" />
+  <gap:plugin name="org.apache.cordova.network-information" source="pgb" />
+  <gap:plugin name="org.apache.cordova.splashscreen" source="pgb"/>
+  <gap:plugin name="org.apache.cordova.vibration" source="pgb" />
+  <plugin name="de.appplant.cordova.plugin.local-notification-ios9-fix" spec="0.8.2" source="pgb" />
+  <icon src = "icon.png"/>
+</widget>

@@ -1,0 +1,82 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>To-Do Main Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="css/index.css" /> <!-- Include the default CSS for now -->
+    <link rel="stylesheet" href="jquerymobile/jquery.mobile-1.1.0.min.css" />
+    <script src="jquerymobile/jquery-1.7.1.min.js"></script>
+    <script src="jquerymobile/jquery.mobile-1.1.0.min.js"></script>
+    <script type = "text/javascript" charset = "utf-8" src = "cordova.js"></script>
+    <script type = "text/javascript" charset = "utf-8" src = "cordova_plugins.js"></script>
+    <script type = "text/javascript" charset = "utf-8" src = "phonegap.js"></script>
+
+
+    <script type = "text/javascript">
+        function onBodyLoad()
+        {
+            document.addEventListener("deviceready", PhonegapLoaded, false);
+        }
+        function PhonegapLoaded()
+        {
+            // ok to make phonegap api calls here as it has now been loaded.
+
+        }
+
+        /**
+         * Purpose: Prompt a user for a task that will be added to the list of previous tasks.
+         * User can enter the text for their new task or cancel. If they try to enter an empty task they
+         * get a warning.
+         */
+        function newTask()
+        {
+            //Create the associative array (technically an Object in JS, but it should work fine for this purpose)
+            var taskArray = {};
+
+            //Ask the user to enter a new task
+            var newTaskText = prompt("To-Do", "");
+            if( newTaskText !== null ) //null !== empty text. Don't annoy them for cancelling!
+            {
+                if(newTaskText === "")
+                {
+                    //This is much prettier than a standard alert
+                    navigator.notification.alert("You can't have an empty To-Do!", false);
+                }
+                else
+                {
+                    //Add the new task to the previous ones
+                    //New task can't be completed so it's not checked by default
+                    taskArray = { check : false, text : newTaskText };
+                    addNewTask(taskArray, false);
+                }
+            }
+        }
+
+        /**
+         * Purpose: Adds a new task to the list of current tasks. Creates a new element from the passed in task, which
+         * is an associative array
+         */
+
+
+    </script>
+</head>
+
+<body onload = "onBodyLoad()">
+<div data-role="page">
+    <div data-role="header">
+        <h1>To-Do App</h1>
+    </div><!— /header —>
+    <!-- Main buttons -->
+    <input type="button" value="Add Task" class="ui-btn ui-btn-block" onclick="newTask();"/>
+    <input type="button" value="Remove Completed Tasks" class="ui-btn ui-btn-block" />
+
+    <div data-role="content">
+        <div id="contentdiv">
+
+        </div>
+    </div><!— /content —>
+</div><!— /page —>
+</body>
+
+</html>
