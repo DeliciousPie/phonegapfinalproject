@@ -64,7 +64,7 @@
          * Purpose: Adds a new task to the list of current tasks. Creates a new element from the passed in task, which
          * is an associative array. We'll call this for new tasks and to populate the screen with saved tasks.
 		 * Parameters:
-		 *		newTaskArray: An array that holds the task to add (task text and whether it is completed)
+		 *		newTaskArray: An "array" that holds the task to add (task text and whether it is completed)
          */
 		function addNewTask(taskToAdd)
 		{
@@ -109,7 +109,7 @@
             $viewButton.attr('id', "task"+taskNum);
             $viewButton.click(function(){
                 //Look at the specific task
-                viewSelectedTask($("#text" + taskNum).val());
+                viewSelectedTask($textBox.val());
             });
             //Add view button to the div
             $newTask.append($viewButton);
@@ -211,6 +211,8 @@
          */
         function loadToDoList()
         {
+            //Rest taskNum
+            taskNum = 0;
             //Load from local storage and decode the JSON objects...hopefully
             var taskList = JSON.parse(window.localStorage.getItem("todoList"));
            // alert("JSON object back is: " + taskList.toString());
@@ -221,7 +223,7 @@
             }
             //Empty the screen of tasks before we redraw them all
             deleteAllTasks();
-            alert("We have loaded " + numberOfTasks + " task(s)");
+            //alert("We have loaded " + numberOfTasks + " task(s)");
             //Add all saved tasks to the screen
             for(var i = 0; i < numberOfTasks; i++)
             {
@@ -273,7 +275,7 @@
     <input type="button" value="Add Task" class="ui-btn ui-btn-block" onclick="newTask();"/>
 	<!-- Maybe auto-remove complete tasks but have a new page to view completed tasks -->
     <input type="button" value="Remove Completed Tasks" class="ui-btn ui-btn-block" onclick="removeCompletedTasks();"/>
-    <input type="button" value="Load Tasks" onclick="loadToDoList();"/>
+    <!--<input type="button" value="Load Tasks" onclick="loadToDoList();"/>-->
 	<hr>
     <div data-role="content">
         <div id="contentdiv">
