@@ -21,10 +21,11 @@
         function PhonegapLoaded()
         {
             // ok to make phonegap api calls here as it has now been loaded.
-			//Load up stored tasks from the database
-			var db = window.openDatabase("Database")
-			
+			//Load up stored tasks
+            loadToDoList();
         }
+        //Global variables
+        var taskNum = 0; //track the number of tasks there are (for ids, etc.)
 
         /**
          * Purpose: Prompt a user for a task that will be added to the list of previous tasks.
@@ -37,7 +38,7 @@
             var taskArray = {};
 
             //Ask the user to enter a new task
-            var newTaskText = prompt("To-Do", "");
+            var newTaskText = prompt("To-Do");
             if( newTaskText !== null ) //null !== empty text. Don't annoy them for cancelling!
             {
                 if(newTaskText === "")
@@ -49,33 +50,216 @@
                 {
                     //Add the new task to the previous ones
                     //New task can't be completed so it's not checked by default
-					taskArray["checked"] = false;
-					taskArray["text"] = newTaskText;
-                    addNewTask(taskArray, false);;
+					//taskArray["checked"] = false;
+					//taskArray["text"] = newTaskText;
+                    //Since we save the whole list as JSON objects and I want to reuse this code I have to make the
+                    //same structure here
+                    taskArray = {check : false, text : newTaskText};
+                    addNewTask(taskArray);
                 }
             }
         }
 
         /**
          * Purpose: Adds a new task to the list of current tasks. Creates a new element from the passed in task, which
-         * is an associative array
+         * is an associative array. We'll call this for new tasks and to populate the screen with saved tasks.
 		 * Parameters:
 		 *		newTaskArray: An array that holds the task to add (task text and whether it is completed)
-		 *		appIsLoading: Boolen value to check if the app is being loaded. If it is NOT being loaded, we will let the user know
-		 *						that the task has been successfully added. If it is being loaded, no alert is needed.
          */
-		function addNewTask(taskToAdd, appIsLoading)
+		function addNewTask(taskToAdd)
 		{
-			alert("You want to add the task: " + taskToAdd["text"]);
-			if(taskToAdd["checked"])
-			{
-				alert("This task is done!");
-			}
-			else
-			{
-				alert("Task needs to be completed");
-			
+            //increment the number of tasks there are
+            taskNum++;
+            //build a new div to hold the task
+            var $newTask = $('<div>');
+            $newTask.attr('id', 'task' + taskNum);
+            //These are the elements that will populate the div
+            var $checkBox;
+            var $textBox;
+            var $viewButton;
+            var $deleteButton;
+
+            //----------------------------------Create the checkbox----------------------------------
+            //if the task is complete, make it checked (complete), else don't add that attribute
+            if(taskToAdd["check"])
+            {
+                $checkBox = $('<input type="checkbox" name="completionStatus" value="true" checked>');
+            }
+            else
+            {
+               $checkBox = $('<input type="checkbox" name="completionStatus" value="true">');
+            }
+            //When checked we need to fire the function to mark this as done
+            //For some reason if I don't wrap this function in an anonymous function it fires as soon as it's created
+            //I am not good enough at JS to figure that one out so deal with my ugly code I guess
+            $checkBox.click(function(){checkBoxClicked($textBox, $checkBox);});
+            //Add checkbox to the div
+            $newTask.append($checkBox);
+
+            //Why didn't I just make this a span? I'm not making an edit function...
+            //----------------------------------Create the text box----------------------------------
+            $textBox = $('<input type="text" name="textbox">');
+            $textBox.attr('id', "text" + taskNum);
+            $textBox.attr('value', taskToAdd["text"]);
+            //Add text box to the div
+            $newTask.append($textBox);
+
+            //----------------------------------Create the view button----------------------------------
+            $viewButton = $('<input type="button" value="View">');
+            $viewButton.attr('id', "task"+taskNum);
+            $viewButton.click(function(){
+                //Look at the specific task
+                viewSelectedTask($("#text" + taskNum).val());
+            });
+            //Add view button to the div
+            $newTask.append($viewButton);
+
+            //----------------------------------Create the delete button----------------------------------
+            $deleteButton = $('<input type="button" value="Delete">');
+            $deleteButton.click(function(){
+                $newTask.remove();
+                saveTaskList();
+            });
+            //Add delete button to the div
+            $newTask.append($deleteButton);
+
+            //Add the new task to the page
+            $("#contentdiv").append($newTask);
+
+            //Save the tasks since we have a new one
+            saveTaskList();
+            //See if this task should be marked as done or not
+            checkBoxClicked($textBox, $checkBox);
+
 		}
+
+        /**
+         * Purpose: Adds a strike through to the text of a task, indicating it is done (but not yet deleted)
+         */
+        function checkBoxClicked(taskText, checkbox)
+        {
+            //If the checkbox is checked, strike out the text
+            if(checkbox.is(':checked'))
+            {
+                taskText.css("text-decoration", "line-through");
+            }
+            else
+            {
+                taskText.css("text-decoration", "none");
+            }
+            //Save status of the list
+            saveTaskList();
+        }
+
+        /**
+         * Purpose: Shows the full details of the selected task
+         * @param taskText The text of the task to view
+         */
+        function viewSelectedTask(taskText)
+        {
+            //Change to give an option for more details: open another page.
+            navigator.notification.alert(taskText, function(){}, 'Your task:', 'Done');
+            //Also this is where we'll add the notification stuff
+        }
+
+        /**
+         * Purpose: Saves all entered tasks to the phone's storage so we can access them later.
+         * This function gathers up every task into an array (technically an object) and saves them to the phone
+         * using the localStorage API so they can be accessed again in the future. I use localStorage rather than
+         * making a database and running transactions because A) I want to get those sweet, sweet self-learning marks
+         * and B) it seems a little less finnicky and should be fine for my very simple use case.
+         */
+        function saveTaskList()
+        {
+            var taskList = {}; //The "array" to hold all the tasks
+            var checked = false; //True if checkbox is checked, false if it isn't checked
+            var taskText = ""; //The actual task's text. Pretty important to save this, as it turns out
+            var taskIndex = 0; //Used to increment the "array" of tasks
+            //Do a quick check to make sure there actually are tasks. If not, we'll just save an empty "array"
+            if($("#contentdiv div").length === 0)
+            {
+                taskList = null;
+            }
+            else
+            {
+                //Loop through all the tasks (child divs of #contentdiv)
+                $("#contentdiv div").each(function(){
+                    //Determine the status of the checkbox
+                    if($(this).find('input:first').is(':checked'))
+                    {
+                        checked = true;
+                    }
+                    else
+                    {
+                        checked = false;
+                    }
+                    //Get the text of the task
+                    //I have no idea how to cleanly get the second input when you are using $(this), so enjoy this mess
+                    taskText = $(this).find("input:first").next().val();
+
+                    //Add our tasks to our fake array thing
+                    taskList[taskIndex] = { check : checked, text : taskText};
+                    taskIndex++;
+                });
+            }
+            //Now we'll use the local storage API and save the tasks as JSON
+            window.localStorage.setItem("todoList", JSON.stringify(taskList));
+        }
+
+        /**
+         * Purpose: Loads any stored tasks and displays them on the screen
+         */
+        function loadToDoList()
+        {
+            //Load from local storage and decode the JSON objects...hopefully
+            var taskList = JSON.parse(window.localStorage.getItem("todoList"));
+           // alert("JSON object back is: " + taskList.toString());
+            var numberOfTasks = 0; //We need to know how many tasks there are to properly index into our fake array
+            for(var task in taskList)
+            {
+                numberOfTasks++;
+            }
+            //Empty the screen of tasks before we redraw them all
+            deleteAllTasks();
+            alert("We have loaded " + numberOfTasks + " task(s)");
+            //Add all saved tasks to the screen
+            for(var i = 0; i < numberOfTasks; i++)
+            {
+                //Add a task from our saved ones
+                addNewTask(taskList[i]);
+            }
+
+        }
+
+        /**
+         * Purpose: Removes ALL tasks on the screen. Use this to catch and stray tasks before we draw the tasks to the
+         * screen.
+         */
+        function deleteAllTasks()
+        {
+            $('#contentdiv div').each(function(){
+                $(this).remove();
+            });
+        }
+
+        /**
+         * Purpose: This function goes through every task and removes everyone that has been checked (marked as
+         * completed). It then updates the tasks so everything is permanently deleted.
+         */
+        function removeCompletedTasks()
+        {
+            //Loop through every child div of contentdiv and remove any with checked checkboxes
+            $("#contentdiv div").each(function(){
+                //If the first input (the checkbox) is checked, remove the entire div
+                if($(this).find('input:first').is(':checked'))
+                {
+                   $(this).remove();
+                }
+            });
+            //Update the list to reflect any changes
+            saveTaskList();
+        }
+
 
     </script>
 </head>
@@ -88,7 +272,8 @@
     <!-- Main buttons -->
     <input type="button" value="Add Task" class="ui-btn ui-btn-block" onclick="newTask();"/>
 	<!-- Maybe auto-remove complete tasks but have a new page to view completed tasks -->
-    <input type="button" value="Remove Completed Tasks" class="ui-btn ui-btn-block" />
+    <input type="button" value="Remove Completed Tasks" class="ui-btn ui-btn-block" onclick="removeCompletedTasks();"/>
+    <input type="button" value="Load Tasks" onclick="loadToDoList();"/>
 	<hr>
     <div data-role="content">
         <div id="contentdiv">
