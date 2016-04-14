@@ -15,7 +15,9 @@
         {
             document.addEventListener("deviceready", phonegapLoaded, false);
         }
-
+		/**
+		*	Purpose: Load contacts once the device is ready and the page has been loaded
+		*/
         function phonegapLoaded()
         {
 
@@ -26,29 +28,108 @@
             //field to filter on, function if contacts found, function if error, find related options (ContactFindOptions)
             navigator.contacts.find(filter, onSuccess, onError, options);
         }
-
+		/**
+		* Purpose: Reads through the device's contacts and display them on the screen
+		* @param contacts An object containing all the contacts on the device
+		*/
         function onSuccess(contacts)
         {
-
-            var contactNames = "";
-            var element = document.getElementById('contactsInfo');
-            // loop through contacts
-            for(var i = 0; i < contacts.length; i++)
-            {
-                contactNames += 'Name: ' + contacts[i].displayName + '<br/>';
-
-            }
-            element.innerHTML = contactNames;
+			var contactName = "";
+			var numberToText = 0;
+			//Loop through contacts. If they have a number, we'll text them how great
+			// our app is
+			for(var i = 0; i < contacts.length; i++)
+			{
+				//Contacts with no phone numbers do not interest us
+				if(contacts[i].phoneNumbers != null && contacts[i].phoneNumbers.length > 0)
+				{
+					contactName = contacts[i].displayName;
+					numberToText = contacts[i].phoneNumbers[0].value;
+					//Create the elements we need
+					var $contactDiv = $('<div>');
+					var $name = $('<h2>');
+					//Add the name
+					$name.text(contacts[i].displayName);
+					//Hold on to the phone number for building our awesome message
+					var phoneNumber = contacts[i].phoneNumbers[0].value;
+					var $number = $('<p>');
+					$number.text(phoneNumber);
+					//Make a button that will send the contact a text about how awesome this app is
+					var $textButton = $('<input type="button" value="Tell ' + $name.text() + ' about this sick app" >' );
+					//Add all the elements to the parent container
+					$contactDiv.append($name);
+					$contactDiv.append($number);
+					$contactDiv.append($textButton);
+					$("#contactsInfo").append($contactDiv);
+				}
+			}
+			//For some reason, in the above loop, adding the button's .click() would make EVERY button have the same
+			// event as the very last one. I got around it by making a different loop add that functionality to each button
+			// after they've been rendered on the screen. It is ugly but it works.		
+			addButtonEvent();
         }
+		/**
+		* Purpose: Loops through every button and adds it's onclick functionality 
+		*/
+		function addButtonEvent()
+		{
+			$("#contactsInfo div").each(function(){
+				var name = $(this).find("h2:first").text();
+				var number = $(this).find("p:first").text();
+				$(this).find("input:first").click(function(){textContact(name, number);});
+			});
+		}
+		
+		/**
+		*
+		*Purpose: Sends a the contact a text message telling them about how great this application
+		* 			is and where to find out more information about it.
+		*@param name The name of the contact. The name is used in a complex string builder to produce a
+		*				highly personalized message.
+		*@param phoneNumber The phonenumber that will receive the SMS
+		*
+		*/
+		function textContact(name, phoneNumber)
+		{
+			//alert("You're gonna send a message to " + name + " with the phone number of " + phoneNumber);
+			var app = {
+			sendSms: function() 
+			{
+				var number = phoneNumber;
+				var message = "Hi, " + name + "! I've been using this sweet app called Wes's Final Project and I thought you'd enjoy it!" + 
+				" Check it out at https://github.com/DeliciousPie/phonegapfinalproject";
+				console.log("number=" + number + ", message= " + message);
 
+				//CONFIGURATION
+				var options = 
+				{
+					replaceLineBreaks: false, // true to replace \n by a new line, false by default
+					android: {
+						intent: 'INTENT'  // send SMS with the native android SMS messaging
+						//intent: '' // send SMS without open any other app
+					}
+				};
+
+				var success = function () { alert('Message sent successfully'); };
+				var error = function (e) { alert('Message Failed:' + e); };
+				sms.send(number, message, options, success, error);
+			}
+			};
+			app.sendSms();
+		}
+		/**
+		*Purpose: Inform the user there was a problem loading the contacts
+		*@param error The error object
+		*/
         function onError(error)
         {
-            alert("There was a problem");
+            alert("There was a problem loading the contacts. Message:\n " + error);
         }
     </script>
 </head>
 <body onload = "onBodyLoad()">
-Contacts Display:
+Tell Your Friends:
 <div id="contactsInfo"></div>
+<input type="button" value="Back" onclick='window.location ="index.html";'>
 </body>
 </html>
