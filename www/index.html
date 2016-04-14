@@ -158,8 +158,14 @@
         function viewSelectedTask(taskText)
         {
             //Change to give an option for more details: open another page.
-            navigator.notification.alert(taskText, function(){}, 'Your task:', 'Done');
+            //navigator.notification.alert(taskText, function(){}, 'Your task:', 'Done');
             //Also this is where we'll add the notification stuff
+            //We need to pass the task information over the the task details page. Use a JSON object
+            var taskToView = {text : taskText};
+            //Add it to session storage (so it'll be cleared after app is closed
+            window.sessionStorage.setItem("taskDetails", JSON.stringify(taskToView));
+            //Send the user to the task details page
+            window.location = 'taskDetails.html';
         }
 
         /**
@@ -276,6 +282,7 @@
 	<!-- Maybe auto-remove complete tasks but have a new page to view completed tasks -->
     <input type="button" value="Remove Completed Tasks" class="ui-btn ui-btn-block" onclick="removeCompletedTasks();"/>
     <!--<input type="button" value="Load Tasks" onclick="loadToDoList();"/>-->
+    <input type="button" value="Assign to Contacts" onclick='window.location="contactlist.html";'>
 	<hr>
     <div data-role="content">
         <div id="contentdiv">

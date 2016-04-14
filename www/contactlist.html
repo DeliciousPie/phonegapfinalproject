@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Display Contacts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="jquerymobile/jquery.mobile-1.1.0.min.css" />
+    <script src="jquerymobile/jquery-1.7.1.min.js"></script>
+    <script src="jquerymobile/jquery.mobile-1.1.0.min.js"></script>
+    <script type = "text/javascript" charset = "utf-8" src = "cordova.js"></script>
+    <script type = "text/javascript" charset = "utf-8" src = "cordova_plugins.js"></script>
+    <script type = "text/javascript" charset = "utf-8" src = "phonegap.js"></script>
+    <script type = "text/javascript">
+        function onBodyLoad()
+        {
+            document.addEventListener("deviceready", phonegapLoaded, false);
+        }
+
+        function phonegapLoaded()
+        {
+
+            var options = new ContactFindOptions();
+            options.filter = "";
+            options.multiple = true;
+            var filter = ["displayName"];
+            //field to filter on, function if contacts found, function if error, find related options (ContactFindOptions)
+            navigator.contacts.find(filter, onSuccess, onError, options);
+        }
+
+        function onSuccess(contacts)
+        {
+
+            var contactNames = "";
+            var element = document.getElementById('contactsInfo');
+            // loop through contacts
+            for(var i = 0; i < contacts.length; i++)
+            {
+                contactNames += 'Name: ' + contacts[i].displayName + '<br/>';
+
+            }
+            element.innerHTML = contactNames;
+        }
+
+        function onError(error)
+        {
+            alert("There was a problem");
+        }
+    </script>
+</head>
+<body onload = "onBodyLoad()">
+Contacts Display:
+<div id="contactsInfo"></div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>PhoneGap Application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="jquerymobile/jquery.mobile-1.1.0.min.css" />
+    <script src="jquerymobile/jquery-1.7.1.min.js"></script>
+    <script src="jquerymobile/jquery.mobile-1.1.0.min.js"></script>
+    <script type = "text/javascript" charset = "utf-8" src = "cordova.js"></script>
+    <script type = "text/javascript" charset = "utf-8" src = "cordova_plugins.js"></script>
+    <script type = "text/javascript" charset = "utf-8" src = "phonegap.js"></script>
+
+    <script type = "text/javascript">
+        function onBodyLoad()
+        {
+            document.addEventListener("deviceready", PhonegapLoaded, false);
+        }
+        function PhonegapLoaded()
+        {
+            // ok to make phonegap api calls here as it has now been loaded.
+            //Build the page
+            buildTaskDetails();
+        }
+
+        /**
+         * Purpose: Creates the details on the page of the passed in task
+         */
+        function buildTaskDetails()
+        {
+            //Grab the stored object
+            var taskDetails = JSON.parse(window.sessionStorage.getItem("taskDetails"));
+            //Clean up session storage
+            window.sessionStorage.clear();
+            //Create the container for the task details
+            var $taskDiv = $('<div>');
+            //------Create the text header-----
+            var $taskText = $('<h2>');
+            $taskText.text(taskDetails["text"]);
+            $taskDiv.append($taskText);
+            //-----Add the button to set a reminder-----
+            var $reminderButton = $('<input type="button" value="Set Reminder">');
+            //I wanted to put this functionality into it's own function but if I don't wrap it inside an anonymous
+            //  function it fires as soon as the element is made. So here is the ugly mess.
+            $reminderButton.click(function(){setReminder($taskText.text())});
+            $taskDiv.append($reminderButton);
+
+            $("#contentdiv").append($taskDiv);
+        }
+
+        /**
+         * Purpose: Asks the user to set a time to be reminded of a task. This will create a notification with the
+         * task's text in it.
+         * @param taskText The text of the task to complete. Will be the text of the notification
+         */
+        function setReminder(taskText)
+        {
+
+            //The docs lie. datetime as a mode just doesn't work. Tested it on a device running 6.0 at home.
+            //So, yeah. I wanted to do a datetime since that would be the most useful but it just doesn't work properly
+            var options = {
+                date: new Date(),
+                mode : 'date',
+                doneButtonLabel : "Remind Me",
+                cancelButtonLabel : "Forget It"
+            };
+
+            datePicker.show(options, function(date){
+                cordova.plugins.notification.local.schedule({
+                   id : 123,
+                   title: "Remember!",
+                   text : taskText,
+                   at : date
+               });
+            });
+        }
+    </script>
+</head>
+
+<body onload = "onBodyLoad()">
+<div data-role="page">
+    <div data-role="header">
+        <h1>App Header Text</h1>
+    </div><!— /header —>
+
+    <div data-role="content">
+        <div id="contentdiv">
+        </div>
+        <input type="button" value="Back" onclick='window.location ="index.html";'>
+    </div><!— /content —>
+</div><!— /page —>
+</body>
+
+</html>
